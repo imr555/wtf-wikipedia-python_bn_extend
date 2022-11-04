@@ -1,6 +1,13 @@
+###############################################
+#####Modified from stream_db.py
+#####To save in text file
+###############################################
+
+
+
 from tqdm import tqdm 
-from lm_dataformat import Archive
-import re 
+#from lm_dataformat import Archive
+#import re 
 import logging
 
 logging.basicConfig()
@@ -24,6 +31,7 @@ def process_raw_article_dump(raw_text:str) -> str:
     article_text = ""
 
     sections = raw_text['sections']
+    
     for section in sections:
         # Sections from articles we exclude
         if section['title'].lower().strip() in ['references', 'see also', 'external links', 'further reading', 'sources', 'bibliography']:
@@ -58,11 +66,14 @@ def process_raw_article_dump(raw_text:str) -> str:
                         word_cnt += len(paragraph['sentences'][0]['text'].split())
                 if word_cnt < 5:
                     continue
+            
+            #Get rid of titles
+            # if len(section['title']) > 0: 
+            #     article_text += "\n\n"+section['title']+"\n\n" 
+            # else:
+            #     article_text += "\n\n"
 
-            if len(section['title']) > 0: 
-                article_text += "\n\n"+section['title']+"\n\n" 
-            else:
-                article_text += "\n\n"
+            article_text += "\n\n"
             
             joined_paragraphs_list = []
             for paragraph in section['paragraphs']:
@@ -97,32 +108,38 @@ if __name__ == '__main__':
     # featured_lists = featured_lists.split('\n')
     #####
 
-    ar = Archive('bnwiki_20221006_processed')
-
     # Articles that start with 'List of' are Wikimedia list articles. Ignore these as they contain 'real' no content
     pattern = r"^[Ll]ist [Oo]f"
     skipped = 0 
-    comitted = 0 
-    for article_text in tqdm(data.find()):
-        #####
-        #Commenting because Skipping the Exclusion of 'List Of' Wikimedia list Articles
-        # title = article_text['title']
-        # if re.match(pattern, title):
-        #     if title in featured_lists:
-        #         ar.add_data(process_raw_article_dump(article_text))
-        #         comitted += 1
-        #     else:
-        #         skipped += 1
-        #         continue
-        # else:
-        #####
+    comitted = 0
 
-        #This was under the else section
-        ar.add_data(process_raw_article_dump(article_text))
-        comitted += 1
+    #
+    with open("bn_wiki_text.txt", "a") as text_file:
+        for article_text in tqdm(data.find()):
+            #####
+            #Commenting because Skipping the Exclusion of 'List Of' Wikimedia list Articles
+            # title = article_text['title']
+            # if re.match(pattern, title):
+            #     if title in featured_lists:
+            #         #ar.add_data(process_raw_article_dump(article_text))
+            #         comitted += 1
+            #     else:
+            #         skipped += 1
+            #         continue
+            # else:
+            #####
 
-    # remember to commit at the end!
-    ar.commit()
+            #This was under the else section
+            #Append to text file here
+
+            #ar.add_data(process_raw_article_dump(article_text))
+            #print(process_raw_article_dump(article_text))
+            text_file.write(process_raw_article_dump(article_text))
+            comitted += 1
+
+
+
+
     #DEBUG:__main__:Conversion Completed - Comitted Articles: 6100633 - Skipped Articles: 112952
     logger.debug(f'Conversion Completed - Comitted Articles: {comitted} - Skipped Articles: {skipped}')
 
